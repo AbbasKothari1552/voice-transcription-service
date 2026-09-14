@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from app.api.v1.transcribe import router as transcribe_router
 from app.config.logging_config import get_logger
 from app.core.exceptions import ProviderError, AudioFetchError, InvalidRequestError
+from app.docs.router import router as docs_router
 import app.providers  # noqa: F401 — import triggers provider registration
 
 logger = get_logger(__name__)
@@ -18,9 +19,15 @@ async def lifespan(app: FastAPI):
     logger.info("Voice Transcription Service shutting down")
 
 
-app = FastAPI(title="Voice Transcription Service", lifespan=lifespan)
+app = FastAPI(
+    title="Voice Transcription Service",
+    lifespan=lifespan,
+    docs_url="/swagger",
+    redoc_url="/redoc",
+)
 
 app.include_router(transcribe_router)
+app.include_router(docs_router)
 
 @app.exception_handler(ProviderError)
 async def provider_error_handler(request, exc: ProviderError):
